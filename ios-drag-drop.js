@@ -26,7 +26,7 @@
   }
 
   function DragDrop(event, el) {
-
+    this.hasMoved = false;
     this.touchPositions = {};
     this.dragData = {};
     this.dragDataTypes = [];
@@ -62,6 +62,7 @@
       }
     },
     move: function(event) {
+      this.hasMoved = true;
       var deltas = { x: [], y: [] };
 
       [].forEach.call(event.changedTouches,function(touch, index) {
@@ -110,9 +111,17 @@
         this.dispatchLeave(event);
       }
 
+      if (!this.hasMoved) {
+        var clickEvt = document.createEvent("MouseEvents");
+          clickEvt.initMouseEvent("click", true, true, this.el.ownerDocument.defaultView, 1,
+            event.screenX, event.screenY, event.clientX, event.clientY,
+            event.ctrlKey, event.altKey, event.shiftKey, event.metaKey, 0, null);
+          this.el.dispatchEvent(clickEvt);
+      }
+
       var target = elementFromTouchEvent(this.el,event)
 
-      if (target) {
+      if (target && this.hasMoved) {
         log("found drop target " + target.tagName);
         this.dispatchDrop(target, event)
       } else {
